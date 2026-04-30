@@ -14,12 +14,28 @@
     --bg:#f0f4ff;--card:#fff;--border:#e2e8f0;
     --text:#1e293b;--muted:#64748b;
   }
-  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body.dark{
+    --bg:#0f1117;--card:#1a1d27;--border:#2d3148;
+    --text:#e2e8f0;--muted:#8892aa;--blue-lt:#1e2a4a;
+  }
+  body.dark thead{background:#14172200}
+  body.dark tr:hover td{background:#20243a}
+  body.dark .avail-note{background:#2a2000;border-color:#5a4200;color:#fbbf24}
+  body.dark .filter-body{box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  body.dark .seg-opt:hover{background:#20243a;color:var(--text)}
+  body.dark .seg-grandes.active{background:#78350f;color:#fef3c7}
+  body.dark .seg-outros.active{background:#065f46;color:#d1fae5}
+  body.dark td[colspan="10"]{background:#0f1117!important;color:var(--muted)!important}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s}
 
   header{background:linear-gradient(135deg,var(--blue-dk),var(--blue));color:#fff;padding:22px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .hd-title{font-size:1.5rem;font-weight:800;letter-spacing:-.4px}
   .hd-sub{font-size:.82rem;opacity:.7;margin-top:3px}
+  .hd-right{display:flex;align-items:center;gap:12px}
   .hd-badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 18px;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .dark-toggle{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:6px 14px 6px 10px;display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.75rem;font-weight:600;color:#fff;transition:background .15s;white-space:nowrap;user-select:none}
+  .dark-toggle:hover{background:rgba(255,255,255,.22)}
+  .dark-toggle svg{flex-shrink:0}
 
   main{max-width:1360px;margin:0 auto;padding:26px 22px 64px}
 
@@ -118,9 +134,15 @@
 <header>
   <div>
     <div class="hd-title">Mascote Universitário — Instagram Analytics</div>
-    <div class="hd-sub">Desempenho por evento &bull; Parceria Medway &bull; 2025</div>
+    <div class="hd-sub">Desempenho por evento &bull; Parceria Medway &bull; 2025–2026</div>
   </div>
-  <div class="hd-badge">Medway</div>
+  <div class="hd-right">
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">
+      <svg id="darkIcon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      <span id="darkLabel">Dark</span>
+    </button>
+    <div class="hd-badge">Medway</div>
+  </div>
 </header>
 
 <main>
@@ -153,10 +175,10 @@
       <span class="seg-dot"></span>Todos
     </button>
     <button class="seg-opt seg-grandes"   id="seg-grandes" onclick="setMode('grandes')">
-      <span class="seg-dot"></span>Somente Grandes
+      <span class="seg-dot"></span>Inters
     </button>
     <button class="seg-opt seg-outros"    id="seg-outros"  onclick="setMode('outros')">
-      <span class="seg-dot"></span>Somente Outros
+      <span class="seg-dot"></span>Eventos Mensais
     </button>
   </div>
 </div>
@@ -165,9 +187,9 @@
 <div class="avail-note">
   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
   <span>
-    <strong>Interações</strong> e <strong>Views</strong> disponíveis a partir de 22/08/2025.
-    <strong>Seguidores Ganhos</strong> disponível a partir de 26/04/2025.
-    Eventos com múltiplos dias (Copa Medway, Intermed SP, JUMED, Intermed MG) têm métricas somadas.
+    <strong>Interações</strong>, <strong>Views</strong> e <strong>Seguidores</strong> disponíveis em todos os eventos de 2026.
+    Em 2025: Views/Interações a partir de 22/08, Seguidores a partir de 26/04.
+    Eventos multi-dia (Copa Medway, FUF, Intermed SP, JUMED, Intermed MG, Pré Intermed) têm métricas somadas.
   </span>
 </div>
 
@@ -266,52 +288,70 @@
 </div>
 
 </main>
-<footer>Dados exportados do Instagram Insights &bull; Mascote Universitário &bull; 2025 &bull; Medway</footer>
+<footer>Dados exportados do Instagram Insights &bull; Mascote Universitário &bull; 2025–2026 &bull; Medway</footer>
 
 <script>
 const EVENTS = [
-  {id:"copa-urso",      label:"22/03",    name:"Copa Urso",               days:1, isInters:false,
+  // ── 2025 ──────────────────────────────────────────────────
+  {id:"copa-urso-25",   label:"22/03",    name:"Copa Urso",               days:1, year:2025, isInters:false,
    reach:4764,   visits:455,  views:null,    interactions:null, follows:null},
-  {id:"copa-medway",    label:"26-27/04", name:"Copa Medway",             days:2, isInters:false,
+  {id:"copa-medway",    label:"26-27/04", name:"Copa Medway",             days:2, year:2025, isInters:false,
    reach:76185,  visits:5305, views:null,    interactions:null, follows:152},
-  {id:"copa-amstel",    label:"01/06",    name:"Copa Amstel / Tuna",      days:1, isInters:false,
+  {id:"copa-amstel",    label:"01/06",    name:"Copa Amstel / Tuna",      days:1, year:2025, isInters:false,
    reach:52287,  visits:2616, views:null,    interactions:null, follows:89},
-  {id:"gestao-unicamp", label:"07/06",    name:"Gestão Med Unicamp",      days:1, isInters:false,
+  {id:"gestao-unicamp", label:"07/06",    name:"Gestão Med Unicamp",      days:1, year:2025, isInters:false,
    reach:32702,  visits:1403, views:null,    interactions:null, follows:51},
-  {id:"pentagonal",     label:"15/06",    name:"Pentagonal Tênis de Mesa",days:1, isInters:false,
+  {id:"pentagonal",     label:"15/06",    name:"Pentagonal Tênis de Mesa",days:1, year:2025, isInters:false,
    reach:28339,  visits:1464, views:null,    interactions:null, follows:67},
-  {id:"atl-abc",        label:"25/07",    name:"Atl Med ABC",             days:1, isInters:false,
+  {id:"atl-abc",        label:"25/07",    name:"Atl Med ABC",             days:1, year:2025, isInters:false,
    reach:20134,  visits:576,  views:null,    interactions:null, follows:27},
-  {id:"atl-einstein",   label:"06/08",    name:"Atl Med Einstein",        days:1, isInters:false,
+  {id:"atl-einstein",   label:"06/08",    name:"Atl Med Einstein",        days:1, year:2025, isInters:false,
    reach:11419,  visits:544,  views:null,    interactions:null, follows:22},
-  {id:"vm-abc",         label:"07/08",    name:"VM Med ABC",              days:1, isInters:false,
+  {id:"vm-abc",         label:"07/08",    name:"VM Med ABC",              days:1, year:2025, isInters:false,
    reach:11135,  visits:679,  views:null,    interactions:null, follows:23},
-  {id:"vf-unicid",      label:"12/08",    name:"VF Med Unicid",           days:1, isInters:false,
+  {id:"vf-unicid",      label:"12/08",    name:"VF Med Unicid",           days:1, year:2025, isInters:false,
    reach:21753,  visits:665,  views:null,    interactions:null, follows:28},
-  {id:"festa-med9",     label:"22/08",    name:"Festa Med9",              days:1, isInters:false,
+  {id:"festa-med9",     label:"22/08",    name:"Festa Med9",              days:1, year:2025, isInters:false,
    reach:21116,  visits:669,  views:76234,   interactions:0,    follows:36},
-  {id:"inter-scamilo",  label:"06/09",    name:"Inter São Camilo",        days:1, isInters:false,
+  {id:"inter-scamilo",  label:"06/09",    name:"Inter São Camilo",        days:1, year:2025, isInters:false,
    reach:44412,  visits:1356, views:205845,  interactions:3082, follows:58},
-  {id:"intermed-sp",    label:"07-13/09", name:"Intermed SP",             days:3, isInters:true,
+  {id:"intermed-sp",    label:"07-13/09", name:"Intermed SP",             days:3, year:2025, isInters:true,
    reach:208046, visits:28926,views:2122415, interactions:42103,follows:692},
-  {id:"jumed",          label:"08-09/09", name:"JUMED",                   days:2, isInters:true,
+  {id:"jumed",          label:"08-09/09", name:"JUMED",                   days:2, year:2025, isInters:true,
    reach:120967, visits:11489,views:977484,  interactions:15609,follows:251},
-  {id:"intermed-mg",    label:"13-14/10", name:"Intermed MG",             days:2, isInters:true,
+  {id:"intermed-mg",    label:"13-14/10", name:"Intermed MG",             days:2, year:2025, isInters:true,
    reach:183655, visits:4890, views:658567,  interactions:17660,follows:225},
-  {id:"judo-med9",      label:"11/11",    name:"Judô Med9",               days:1, isInters:false,
+  {id:"judo-med9",      label:"11/11",    name:"Judô Med9",               days:1, year:2025, isInters:false,
    reach:24639,  visits:576,  views:77288,   interactions:1398, follows:26},
-  {id:"campo-anhembi",  label:"13/11",    name:"Campo Med Anhembi",       days:1, isInters:false,
+  {id:"campo-anhembi",  label:"13/11",    name:"Campo Med Anhembi",       days:1, year:2025, isInters:false,
    reach:23913,  visits:604,  views:81819,   interactions:1078, follows:37},
-  {id:"jimesp",         label:"22/11",    name:"JIMESP",                  days:1, isInters:false,
+  {id:"jimesp",         label:"22/11",    name:"JIMESP",                  days:1, year:2025, isInters:false,
    reach:50349,  visits:1667, views:267860,  interactions:3238, follows:75},
-  {id:"crm",            label:"23/11",    name:"CRM",                     days:1, isInters:false,
+  {id:"crm",            label:"23/11",    name:"CRM",                     days:1, year:2025, isInters:false,
    reach:52079,  visits:3050, views:332986,  interactions:4027, follows:89},
-  {id:"gestao-santos",  label:"24/11",    name:"Gestão Med Santos",       days:1, isInters:false,
+  {id:"gestao-santos",  label:"24/11",    name:"Gestão Med Santos",       days:1, year:2025, isInters:false,
    reach:52539,  visits:1606, views:225930,  interactions:3108, follows:54},
-  {id:"natacao-med9",   label:"02/12",    name:"Natação Med 9",           days:1, isInters:false,
+  {id:"natacao-med9",   label:"02/12",    name:"Natação Med 9",           days:1, year:2025, isInters:false,
    reach:20387,  visits:507,  views:74228,   interactions:1194, follows:16},
-  {id:"gestao-scamilo", label:"05/12",    name:"Gestão São Camilo",       days:1, isInters:false,
+  {id:"gestao-scamilo", label:"05/12",    name:"Gestão São Camilo",       days:1, year:2025, isInters:false,
    reach:24977,  visits:631,  views:84396,   interactions:1198, follows:24},
+  // ── 2026 ──────────────────────────────────────────────────
+  {id:"fuf",            label:"21-22/02", name:"FUF",                     days:2, year:2026, isInters:false,
+   reach:106818, visits:7009, views:768566,  interactions:10484,follows:298},
+  {id:"copa-aguia",     label:"01/03",    name:"Copa Águia",              days:1, year:2026, isInters:false,
+   reach:43400,  visits:2584, views:277930,  interactions:3218, follows:97},
+  {id:"running-med",    label:"02/03",    name:"Running Med",             days:1, year:2026, isInters:false,
+   reach:27154,  visits:912,  views:103796,  interactions:1889, follows:34},
+  {id:"medswim",        label:"07/03",    name:"Medswim",                 days:1, year:2026, isInters:false,
+   reach:41921,  visits:2148, views:243928,  interactions:3407, follows:91},
+  {id:"torneio-atl",    label:"08/03",    name:"Torneio de Atletismo",    days:1, year:2026, isInters:false,
+   reach:46348,  visits:3481, views:413503,  interactions:4891, follows:95},
+  {id:"tuna-26",        label:"15/03",    name:"TUNA",                    days:1, year:2026, isInters:false,
+   reach:70531,  visits:5467, views:535234,  interactions:8927, follows:148},
+  {id:"copa-urso-26",   label:"21/03",    name:"Copa Urso",               days:1, year:2026, isInters:false,
+   reach:38950,  visits:2408, views:260152,  interactions:4991, follows:94},
+  {id:"pre-intermed",   label:"29/03-04/04",name:"Pré Intermed",          days:2, year:2026, isInters:true,
+   reach:194505, visits:22224,views:1850088, interactions:32117,follows:576},
 ];
 
 // ── State ─────────────────────────────────────────────────
@@ -355,7 +395,15 @@ function rebuildFilterGrid(){
   const pool = poolForMode();
   const g = document.getElementById('fgrid');
   g.innerHTML='';
+  let lastYear = null;
   pool.forEach(ev=>{
+    if(ev.year !== lastYear){
+      lastYear = ev.year;
+      const sep = document.createElement('div');
+      sep.style.cssText='grid-column:1/-1;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:4px 2px 2px;border-bottom:1px solid var(--border);margin-top:4px';
+      sep.textContent = ev.year;
+      g.appendChild(sep);
+    }
     const lbl=document.createElement('label');
     lbl.className='fi'+(sel.has(ev.id)?' on':'');
     const daysTxt = ev.days>1 ? ` <span style="font-size:.66rem;color:var(--muted)">${ev.days}d</span>` : '';
@@ -409,8 +457,8 @@ function makeBar(id, labels, names, vals, color){
         }}
       },
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:9.5},maxRotation:50}},
-        y:{grid:{color:'#f1f5f9'},ticks:{callback:v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'k':v}}
+        x:{grid:{display:false},ticks:{font:{size:9.5},maxRotation:50,color:dark?'#8892aa':'#94a3b8'}},
+        y:{grid:{color:dark?'#2d3148':'#f1f5f9'},ticks:{color:dark?'#8892aa':'#94a3b8',callback:v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'k':v}}
       }
     }
   });
@@ -464,7 +512,14 @@ function renderTable(data){
 
   const tbody=document.getElementById('tbody');
   tbody.innerHTML='';
+  let lastYear = null;
   [...data].reverse().forEach(ev=>{
+    if(ev.year !== lastYear){
+      lastYear = ev.year;
+      const tr = document.createElement('tr');
+      tr.innerHTML=`<td colspan="10" style="background:#f0f4ff;font-size:.68rem;font-weight:800;color:var(--blue-dk);letter-spacing:1px;text-transform:uppercase;padding:7px 13px;border-bottom:1px solid var(--border)">${ev.year}</td>`;
+      tbody.appendChild(tr);
+    }
     const daysBadge = ev.days>1 ? `<span class="days-badge">${ev.days} dias</span>` : '';
     const tr=document.createElement('tr');
     tr.innerHTML=`
@@ -482,6 +537,19 @@ function renderTable(data){
     tbody.appendChild(tr);
   });
   document.getElementById('tblCount').textContent=`${data.length} evento${data.length!==1?'s':''} · ${data.reduce((s,e)=>s+e.days,0)} dias`;
+}
+
+// ── Dark mode ─────────────────────────────────────────────
+const SUN = `<path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/><circle cx="12" cy="12" r="4"/>`;
+const MOON = `<path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>`;
+let dark = false;
+function toggleDark(){
+  dark = !dark;
+  document.body.classList.toggle('dark', dark);
+  document.getElementById('darkIcon').innerHTML = dark ? SUN : MOON;
+  document.getElementById('darkLabel').textContent = dark ? 'Light' : 'Dark';
+  // redraw charts with new colors
+  render();
 }
 
 // ── Init ──────────────────────────────────────────────────
