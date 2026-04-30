@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mascote Universitário — Instagram Analytics | Medway</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --blue:#1a4fdb;--blue-dk:#0d2e8f;--blue-lt:#dbeafe;
+    --green:#10b981;--purple:#8b5cf6;--pink:#ec4899;
+    --amber:#f59e0b;--teal:#0891b2;
+    --bg:#f0f4ff;--card:#fff;--border:#e2e8f0;
+    --text:#1e293b;--muted:#64748b;
+  }
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  header{background:linear-gradient(135deg,var(--blue-dk),var(--blue));color:#fff;padding:22px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .hd-title{font-size:1.5rem;font-weight:800;letter-spacing:-.4px}
+  .hd-sub{font-size:.82rem;opacity:.7;margin-top:3px}
+  .hd-badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 18px;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+  main{max-width:1360px;margin:0 auto;padding:26px 22px 64px}
+
+  /* TOP CONTROLS */
+  .top-controls{display:flex;gap:10px;margin-bottom:22px;align-items:stretch;flex-wrap:wrap}
+  .filter-wrap{flex:1;min-width:220px;position:relative}
+  .filter-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:100%;min-height:46px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:12px 18px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06);transition:border-color .15s;user-select:none}
+  .filter-toggle:hover{border-color:var(--blue)}
+  .filter-toggle.open{border-color:var(--blue);border-bottom-left-radius:0;border-bottom-right-radius:0}
+  .ft-left{display:flex;align-items:center;gap:10px}
+  .ft-count{background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:999px}
+  .ft-chevron{transition:transform .2s;color:var(--muted);flex-shrink:0}
+  .ft-chevron.open{transform:rotate(180deg)}
+  .filter-body{display:none;position:absolute;left:0;right:0;z-index:100;background:var(--card);border:1.5px solid var(--blue);border-top:none;border-bottom-left-radius:10px;border-bottom-right-radius:10px;padding:14px 16px 18px;box-shadow:0 8px 24px rgba(0,0,0,.1)}
+  .filter-body.open{display:block}
+  .filter-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .btn{border:none;border-radius:6px;padding:6px 14px;font-size:.76rem;font-weight:600;cursor:pointer;transition:background .15s,opacity .15s}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+  .btn-close{background:var(--blue);color:#fff}
+  .btn-close:hover{opacity:.88}
+  .filter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px}
+  .fi{display:flex;align-items:center;gap:8px;padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+  .fi:hover,.fi.on{border-color:var(--blue);background:var(--blue-lt)}
+  .fi input{accent-color:var(--blue);width:13px;height:13px;flex-shrink:0}
+  .fi .fl{font-size:.75rem;font-weight:700;color:var(--blue-dk);min-width:40px}
+  .fi .fn{font-size:.75rem;color:var(--text);line-height:1.3}
+
+  /* SEGMENTED CONTROL */
+  .seg-ctrl{
+    display:flex;background:var(--card);border:1.5px solid var(--border);
+    border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);
+    flex-shrink:0;
+  }
+  .seg-opt{
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:0 18px;font-size:.78rem;font-weight:700;color:var(--muted);
+    cursor:pointer;transition:all .18s;white-space:nowrap;letter-spacing:.2px;
+    border:none;background:transparent;height:100%;min-height:46px;
+    border-right:1px solid var(--border);
+  }
+  .seg-opt:last-child{border-right:none}
+  .seg-opt:hover{background:#f8fafc;color:var(--text)}
+  .seg-opt.active{background:var(--blue-dk);color:#fff}
+  .seg-dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5;flex-shrink:0}
+  .seg-opt.active .seg-dot{opacity:1}
+  .seg-opt.seg-grandes.active{background:#92400e;color:#fef3c7}
+  .seg-opt.seg-outros.active{background:var(--green);color:#fff}
+
+  /* AVAILABILITY NOTE */
+  .avail-note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:.77rem;color:#92400e;margin-bottom:18px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+
+  /* KPI */
+  .kpi-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:13px;margin-bottom:22px}
+  @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:17px 17px 13px;box-shadow:0 1px 4px rgba(0,0,0,.06);position:relative;overflow:hidden}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--blue))}
+  .kpi-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+  .kpi-val{font-size:1.7rem;font-weight:800;color:var(--text);line-height:1}
+  .kpi-sub{font-size:.68rem;color:var(--muted);margin-top:5px}
+
+  /* CHARTS */
+  .charts-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .charts-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+  @media(max-width:1000px){.charts-2,.charts-3{grid-template-columns:1fr!important}}
+  .cc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:17px 17px 13px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .cc-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:13px;gap:8px}
+  .cc-title{font-size:.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .cc-badge{font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .badge-partial{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+  .badge-full{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+  .cw{position:relative;height:240px}
+
+  /* TABLE */
+  .tbl-card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;margin-bottom:24px}
+  .tbl-hd{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .tbl-hd h3{font-size:.9rem;font-weight:600}
+  table{width:100%;border-collapse:collapse}
+  thead{background:#f8fafc}
+  th{text-align:left;padding:9px 13px;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);white-space:nowrap}
+  th.r,td.r{text-align:right}
+  td{padding:9px 13px;font-size:.82rem;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f8fafc}
+  .bd{display:inline-block;background:var(--blue-dk);color:#fff;font-size:.66rem;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .days-badge{display:inline-block;background:#f1f5f9;color:var(--muted);font-size:.64rem;font-weight:600;padding:1px 7px;border-radius:999px;margin-left:5px}
+  .mb{display:flex;align-items:center;gap:5px;min-width:55px}
+  .mt{flex:1;height:5px;background:var(--border);border-radius:999px;overflow:hidden}
+  .mf{height:100%;border-radius:999px;transition:width .4s}
+  .nd{font-size:.68rem;color:var(--muted);background:#f1f5f9;padding:2px 7px;border-radius:4px}
+  footer{text-align:center;padding:14px;font-size:.7rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="hd-title">Mascote Universitário — Instagram Analytics</div>
+    <div class="hd-sub">Desempenho por evento &bull; Parceria Medway &bull; 2025</div>
+  </div>
+  <div class="hd-badge">Medway</div>
+</header>
+
+<main>
+
+<!-- TOP CONTROLS -->
+<div class="top-controls">
+  <!-- Filter dropdown -->
+  <div class="filter-wrap">
+    <div class="filter-toggle" id="ftoggle" onclick="toggleFilter()">
+      <div class="ft-left">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+        <span>Filtrar eventos</span>
+        <span class="ft-count" id="ftCount">—</span>
+      </div>
+      <svg class="ft-chevron" id="ftChev" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="filter-body" id="fbody">
+      <div class="filter-actions">
+        <button class="btn btn-ghost" onclick="selectAll()">Todos</button>
+        <button class="btn btn-ghost" onclick="clearAll()">Nenhum</button>
+        <button class="btn btn-close" onclick="toggleFilter()">Fechar</button>
+      </div>
+      <div class="filter-grid" id="fgrid"></div>
+    </div>
+  </div>
+
+  <!-- Segmented control -->
+  <div class="seg-ctrl">
+    <button class="seg-opt active"        id="seg-all"     onclick="setMode('all')">
+      <span class="seg-dot"></span>Todos
+    </button>
+    <button class="seg-opt seg-grandes"   id="seg-grandes" onclick="setMode('grandes')">
+      <span class="seg-dot"></span>Somente Grandes
+    </button>
+    <button class="seg-opt seg-outros"    id="seg-outros"  onclick="setMode('outros')">
+      <span class="seg-dot"></span>Somente Outros
+    </button>
+  </div>
+</div>
+
+<!-- AVAILABILITY NOTE -->
+<div class="avail-note">
+  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+  <span>
+    <strong>Interações</strong> e <strong>Views</strong> disponíveis a partir de 22/08/2025.
+    <strong>Seguidores Ganhos</strong> disponível a partir de 26/04/2025.
+    Eventos com múltiplos dias (Copa Medway, Intermed SP, JUMED, Intermed MG) têm métricas somadas.
+  </span>
+</div>
+
+<!-- KPI -->
+<div class="kpi-grid">
+  <div class="kpi" style="--c:var(--blue)">
+    <div class="kpi-lbl">Eventos</div>
+    <div class="kpi-val" id="kpiN">—</div>
+    <div class="kpi-sub">selecionados</div>
+  </div>
+  <div class="kpi" style="--c:#94a3b8">
+    <div class="kpi-lbl">Dias</div>
+    <div class="kpi-val" id="kpiDays">—</div>
+    <div class="kpi-sub">dias trabalhados</div>
+  </div>
+  <div class="kpi" style="--c:#2563eb">
+    <div class="kpi-lbl">Alcance Total</div>
+    <div class="kpi-val" id="kpiReach">—</div>
+    <div class="kpi-sub" id="kpiReachAvg">média/evento</div>
+  </div>
+  <div class="kpi" style="--c:var(--green)">
+    <div class="kpi-lbl">Visitas ao Perfil</div>
+    <div class="kpi-val" id="kpiVisits">—</div>
+    <div class="kpi-sub" id="kpiVisitsAvg">média/evento</div>
+  </div>
+  <div class="kpi" style="--c:var(--purple)">
+    <div class="kpi-lbl">Views</div>
+    <div class="kpi-val" id="kpiViews">—</div>
+    <div class="kpi-sub" id="kpiViewsAvg">média/evento</div>
+  </div>
+  <div class="kpi" style="--c:var(--teal)">
+    <div class="kpi-lbl">Interações</div>
+    <div class="kpi-val" id="kpiInter">—</div>
+    <div class="kpi-sub" id="kpiInterAvg">média/evento</div>
+  </div>
+  <div class="kpi" style="--c:var(--pink)">
+    <div class="kpi-lbl">Seguidores Ganhos</div>
+    <div class="kpi-val" id="kpiFollows">—</div>
+    <div class="kpi-sub" id="kpiFollowsAvg">média/evento</div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="charts-2">
+  <div class="cc">
+    <div class="cc-hd"><div class="cc-title">Alcance (Reach)</div><span class="cc-badge badge-full">Todos os eventos</span></div>
+    <div class="cw"><canvas id="cReach"></canvas></div>
+  </div>
+  <div class="cc">
+    <div class="cc-hd"><div class="cc-title">Visitas ao Perfil</div><span class="cc-badge badge-full">Todos os eventos</span></div>
+    <div class="cw"><canvas id="cVisits"></canvas></div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 2 -->
+<div class="charts-3">
+  <div class="cc">
+    <div class="cc-hd"><div class="cc-title">Views</div><span class="cc-badge badge-partial">A partir de 22/08</span></div>
+    <div class="cw"><canvas id="cViews"></canvas></div>
+  </div>
+  <div class="cc">
+    <div class="cc-hd"><div class="cc-title">Interações</div><span class="cc-badge badge-partial">A partir de 22/08</span></div>
+    <div class="cw"><canvas id="cInter"></canvas></div>
+  </div>
+  <div class="cc">
+    <div class="cc-hd"><div class="cc-title">Seguidores Ganhos</div><span class="cc-badge badge-partial">A partir de 26/04</span></div>
+    <div class="cw"><canvas id="cFollows"></canvas></div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="tbl-card">
+  <div class="tbl-hd">
+    <h3>Detalhamento por evento</h3>
+    <span id="tblCount" style="font-size:.76rem;color:var(--muted)"></span>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Evento</th>
+          <th class="r">Alcance</th>
+          <th style="min-width:65px"></th>
+          <th class="r">Visitas</th>
+          <th style="min-width:55px"></th>
+          <th class="r">Views</th>
+          <th style="min-width:55px"></th>
+          <th class="r">Interações</th>
+          <th class="r">Seguidores</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+<footer>Dados exportados do Instagram Insights &bull; Mascote Universitário &bull; 2025 &bull; Medway</footer>
+
+<script>
+const EVENTS = [
+  {id:"copa-urso",      label:"22/03",    name:"Copa Urso",               days:1, isInters:false,
+   reach:4764,   visits:455,  views:null,    interactions:null, follows:null},
+  {id:"copa-medway",    label:"26-27/04", name:"Copa Medway",             days:2, isInters:false,
+   reach:76185,  visits:5305, views:null,    interactions:null, follows:152},
+  {id:"copa-amstel",    label:"01/06",    name:"Copa Amstel / Tuna",      days:1, isInters:false,
+   reach:52287,  visits:2616, views:null,    interactions:null, follows:89},
+  {id:"gestao-unicamp", label:"07/06",    name:"Gestão Med Unicamp",      days:1, isInters:false,
+   reach:32702,  visits:1403, views:null,    interactions:null, follows:51},
+  {id:"pentagonal",     label:"15/06",    name:"Pentagonal Tênis de Mesa",days:1, isInters:false,
+   reach:28339,  visits:1464, views:null,    interactions:null, follows:67},
+  {id:"atl-abc",        label:"25/07",    name:"Atl Med ABC",             days:1, isInters:false,
+   reach:20134,  visits:576,  views:null,    interactions:null, follows:27},
+  {id:"atl-einstein",   label:"06/08",    name:"Atl Med Einstein",        days:1, isInters:false,
+   reach:11419,  visits:544,  views:null,    interactions:null, follows:22},
+  {id:"vm-abc",         label:"07/08",    name:"VM Med ABC",              days:1, isInters:false,
+   reach:11135,  visits:679,  views:null,    interactions:null, follows:23},
+  {id:"vf-unicid",      label:"12/08",    name:"VF Med Unicid",           days:1, isInters:false,
+   reach:21753,  visits:665,  views:null,    interactions:null, follows:28},
+  {id:"festa-med9",     label:"22/08",    name:"Festa Med9",              days:1, isInters:false,
+   reach:21116,  visits:669,  views:76234,   interactions:0,    follows:36},
+  {id:"inter-scamilo",  label:"06/09",    name:"Inter São Camilo",        days:1, isInters:false,
+   reach:44412,  visits:1356, views:205845,  interactions:3082, follows:58},
+  {id:"intermed-sp",    label:"07-13/09", name:"Intermed SP",             days:3, isInters:true,
+   reach:208046, visits:28926,views:2122415, interactions:42103,follows:692},
+  {id:"jumed",          label:"08-09/09", name:"JUMED",                   days:2, isInters:true,
+   reach:120967, visits:11489,views:977484,  interactions:15609,follows:251},
+  {id:"intermed-mg",    label:"13-14/10", name:"Intermed MG",             days:2, isInters:true,
+   reach:183655, visits:4890, views:658567,  interactions:17660,follows:225},
+  {id:"judo-med9",      label:"11/11",    name:"Judô Med9",               days:1, isInters:false,
+   reach:24639,  visits:576,  views:77288,   interactions:1398, follows:26},
+  {id:"campo-anhembi",  label:"13/11",    name:"Campo Med Anhembi",       days:1, isInters:false,
+   reach:23913,  visits:604,  views:81819,   interactions:1078, follows:37},
+  {id:"jimesp",         label:"22/11",    name:"JIMESP",                  days:1, isInters:false,
+   reach:50349,  visits:1667, views:267860,  interactions:3238, follows:75},
+  {id:"crm",            label:"23/11",    name:"CRM",                     days:1, isInters:false,
+   reach:52079,  visits:3050, views:332986,  interactions:4027, follows:89},
+  {id:"gestao-santos",  label:"24/11",    name:"Gestão Med Santos",       days:1, isInters:false,
+   reach:52539,  visits:1606, views:225930,  interactions:3108, follows:54},
+  {id:"natacao-med9",   label:"02/12",    name:"Natação Med 9",           days:1, isInters:false,
+   reach:20387,  visits:507,  views:74228,   interactions:1194, follows:16},
+  {id:"gestao-scamilo", label:"05/12",    name:"Gestão São Camilo",       days:1, isInters:false,
+   reach:24977,  visits:631,  views:84396,   interactions:1198, follows:24},
+];
+
+// ── State ─────────────────────────────────────────────────
+let sel  = new Set(EVENTS.map(e=>e.id));
+let mode = 'all'; // 'all' | 'grandes' | 'outros'
+let filterOpen = false;
+let charts = {};
+
+const fmt = n => n==null ? null : n.toLocaleString('pt-BR');
+const pct = (v,mx) => mx ? Math.round(v/mx*100) : 0;
+
+function poolForMode(){
+  if(mode==='all')     return EVENTS;
+  if(mode==='grandes') return EVENTS.filter(e=>e.isInters);
+  return EVENTS.filter(e=>!e.isInters);
+}
+function visible(){
+  return poolForMode().filter(e=>sel.has(e.id));
+}
+
+// ── Segmented control ─────────────────────────────────────
+function setMode(m){
+  mode = m;
+  ['all','grandes','outros'].forEach(k=>{
+    document.getElementById('seg-'+k).classList.toggle('active', k===m);
+  });
+  // select all in new pool by default
+  poolForMode().forEach(e=>sel.add(e.id));
+  rebuildFilterGrid();
+  render();
+}
+
+// ── Filter ────────────────────────────────────────────────
+function toggleFilter(){
+  filterOpen=!filterOpen;
+  document.getElementById('ftoggle').classList.toggle('open',filterOpen);
+  document.getElementById('fbody').classList.toggle('open',filterOpen);
+  document.getElementById('ftChev').classList.toggle('open',filterOpen);
+}
+function rebuildFilterGrid(){
+  const pool = poolForMode();
+  const g = document.getElementById('fgrid');
+  g.innerHTML='';
+  pool.forEach(ev=>{
+    const lbl=document.createElement('label');
+    lbl.className='fi'+(sel.has(ev.id)?' on':'');
+    const daysTxt = ev.days>1 ? ` <span style="font-size:.66rem;color:var(--muted)">${ev.days}d</span>` : '';
+    lbl.innerHTML=`<input type="checkbox" ${sel.has(ev.id)?'checked':''} value="${ev.id}">
+      <span class="fl">${ev.label}</span>
+      <span class="fn">${ev.name}${daysTxt}</span>`;
+    lbl.querySelector('input').addEventListener('change',e=>{
+      e.target.checked ? sel.add(ev.id) : sel.delete(ev.id);
+      lbl.classList.toggle('on',e.target.checked);
+      updateCount(); render();
+    });
+    g.appendChild(lbl);
+  });
+  updateCount();
+}
+function updateCount(){ document.getElementById('ftCount').textContent = visible().length; }
+function selectAll(){
+  poolForMode().forEach(e=>sel.add(e.id));
+  document.querySelectorAll('#fgrid input').forEach(c=>c.checked=true);
+  document.querySelectorAll('#fgrid .fi').forEach(el=>el.classList.add('on'));
+  updateCount(); render();
+}
+function clearAll(){
+  poolForMode().forEach(e=>sel.delete(e.id));
+  document.querySelectorAll('#fgrid input').forEach(c=>c.checked=false);
+  document.querySelectorAll('#fgrid .fi').forEach(el=>el.classList.remove('on'));
+  updateCount(); render();
+}
+
+// ── Charts ────────────────────────────────────────────────
+function makeBar(id, labels, names, vals, color){
+  if(charts[id]) charts[id].destroy();
+  const maxV = Math.max(...vals.filter(v=>v!=null),1);
+  const bg = vals.map(v => v==null ? 'transparent'
+    : color.replace('§', String(0.28+(v/maxV)*0.72)));
+  const ds = {data:vals, backgroundColor:bg, borderRadius:4, borderSkipped:false};
+  const cd  = {labels, datasets:[ds]};
+  cd._names = names;
+  charts[id] = new Chart(document.getElementById(id),{
+    type:'bar', data:cd,
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title: items => cd._names?.[items[0].dataIndex] ?? items[0].label,
+          label: ctx => {
+            const v = ctx.parsed.y;
+            return v!=null ? ` ${v.toLocaleString('pt-BR')}` : ' —';
+          }
+        }}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9.5},maxRotation:50}},
+        y:{grid:{color:'#f1f5f9'},ticks:{callback:v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'k':v}}
+      }
+    }
+  });
+}
+
+// ── Render ────────────────────────────────────────────────
+function render(){
+  const data = visible();
+  renderKPIs(data);
+  renderCharts(data);
+  renderTable(data);
+}
+
+function renderKPIs(data){
+  const sum=(key)=>{const d=data.filter(r=>r[key]!=null);return{tot:d.reduce((s,r)=>s+r[key],0),n:d.length};};
+  const r=sum('reach'),v=sum('visits'),vw=sum('views'),it=sum('interactions'),fo=sum('follows');
+  const totalDays = data.reduce((s,e)=>s+e.days,0);
+
+  document.getElementById('kpiN').textContent       = data.length;
+  document.getElementById('kpiDays').textContent    = totalDays;
+  document.getElementById('kpiReach').textContent   = r.n  ? fmt(r.tot)  : '—';
+  document.getElementById('kpiVisits').textContent  = v.n  ? fmt(v.tot)  : '—';
+  document.getElementById('kpiViews').textContent   = vw.n ? fmt(vw.tot) : '—';
+  document.getElementById('kpiInter').textContent   = it.n ? fmt(it.tot) : '—';
+  document.getElementById('kpiFollows').textContent = fo.n ? fmt(fo.tot) : '—';
+  document.getElementById('kpiReachAvg').textContent  = r.n  ? `média ${fmt(Math.round(r.tot/r.n))}/evento`  : '—';
+  document.getElementById('kpiVisitsAvg').textContent = v.n  ? `média ${fmt(Math.round(v.tot/v.n))}/evento`  : '—';
+  document.getElementById('kpiViewsAvg').textContent  = vw.n ? `média ${fmt(Math.round(vw.tot/vw.n))}/evento`: 'sem dados no período';
+  document.getElementById('kpiInterAvg').textContent  = it.n ? `média ${fmt(Math.round(it.tot/it.n))}/evento`: 'sem dados no período';
+  document.getElementById('kpiFollowsAvg').textContent= fo.n ? `média ${fmt(Math.round(fo.tot/fo.n))}/evento`: 'sem dados no período';
+}
+
+function renderCharts(data){
+  const l=data.map(r=>r.label), n=data.map(r=>r.name);
+  makeBar('cReach', l,n, data.map(r=>r.reach),        'rgba(26,79,219,§)');
+  makeBar('cVisits',l,n, data.map(r=>r.visits),       'rgba(16,185,129,§)');
+  makeBar('cViews', l,n, data.map(r=>r.views),        'rgba(139,92,246,§)');
+  makeBar('cInter', l,n, data.map(r=>r.interactions), 'rgba(8,145,178,§)');
+  makeBar('cFollows',l,n,data.map(r=>r.follows),      'rgba(236,72,153,§)');
+}
+
+function renderTable(data){
+  const mx={
+    reach: Math.max(...data.filter(r=>r.reach!=null).map(r=>r.reach),1),
+    visits:Math.max(...data.filter(r=>r.visits!=null).map(r=>r.visits),1),
+    views: Math.max(...data.filter(r=>r.views!=null).map(r=>r.views),1),
+  };
+  const nd = v => v==null ? '<span class="nd">—</span>' : fmt(v);
+  const bar = (v,key,col) => v==null ? '' :
+    `<div class="mb"><div class="mt"><div class="mf" style="background:${col};width:${pct(v,mx[key]??1)}%"></div></div></div>`;
+
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  [...data].reverse().forEach(ev=>{
+    const daysBadge = ev.days>1 ? `<span class="days-badge">${ev.days} dias</span>` : '';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="bd">${ev.label}</span>${daysBadge}</td>
+      <td>${ev.name}</td>
+      <td class="r">${nd(ev.reach)}</td>
+      <td>${bar(ev.reach,'reach','var(--blue)')}</td>
+      <td class="r">${nd(ev.visits)}</td>
+      <td>${bar(ev.visits,'visits','var(--green)')}</td>
+      <td class="r">${nd(ev.views)}</td>
+      <td>${bar(ev.views,'views','var(--purple)')}</td>
+      <td class="r">${nd(ev.interactions)}</td>
+      <td class="r">${nd(ev.follows)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('tblCount').textContent=`${data.length} evento${data.length!==1?'s':''} · ${data.reduce((s,e)=>s+e.days,0)} dias`;
+}
+
+// ── Init ──────────────────────────────────────────────────
+rebuildFilterGrid();
+render();
+</script>
+</body>
+</html>
